@@ -1,449 +1,466 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2575.7">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IRON SEQUENCE Timer</title>
+  
+  <!-- React and ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Babel Standalone (for compiling JSX in the browser) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-<p class="p1">import React, { useState, useEffect, useRef } from 'react';</p>
-<p class="p1">import {<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>Play,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>Pause,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>RotateCcw,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>Plus,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>Trash2,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>ChevronUp,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>ChevronDown,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>Volume2,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>VolumeX,</p>
-<p class="p1"><span class="Apple-converted-space">  </span>Clock,</p>
-<p class="p1"><span class="Apple-converted-space">  </span>Copy,</p>
-<p class="p1"><span class="Apple-converted-space">  </span>Zap,</p>
-<p class="p1"><span class="Apple-converted-space">  </span>Save,</p>
-<p class="p1"><span class="Apple-converted-space">  </span>Download</p>
-<p class="p1">} from 'lucide-react';</p>
-<p class="p2"><br></p>
-<p class="p1">const DEFAULT_SEQUENCE = [</p>
-<p class="p1"><span class="Apple-converted-space">  </span>{ id: '1', label: 'GET READY', duration: 15, remaining: 15 },</p>
-<p class="p1"><span class="Apple-converted-space">  </span>{ id: '2', label: 'SET 1', duration: 60, remaining: 60 },</p>
-<p class="p1"><span class="Apple-converted-space">  </span>{ id: '3', label: 'REST', duration: 30, remaining: 30 },</p>
-<p class="p1"><span class="Apple-converted-space">  </span>{ id: '4', label: 'SET 2', duration: 60, remaining: 60 },</p>
-<p class="p1"><span class="Apple-converted-space">  </span>{ id: '5', label: 'REST', duration: 30, remaining: 30 },</p>
-<p class="p1"><span class="Apple-converted-space">  </span>{ id: '6', label: 'SET 3', duration: 60, remaining: 60 },</p>
-<p class="p1"><span class="Apple-converted-space">  </span>{ id: '7', label: 'REST', duration: 30, remaining: 30 },</p>
-<p class="p1">];</p>
-<p class="p2"><br></p>
-<p class="p1">const App = () =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const [timers, setTimers] = useState(DEFAULT_SEQUENCE);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const [savedSequences, setSavedSequences] = useState([]);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const [saveName, setSaveName] = useState('');</p>
-<p class="p2"><span class="Apple-converted-space">  </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>const [currentIndex, setCurrentIndex] = useState(null);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const [isActive, setIsActive] = useState(false);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const [isMuted, setIsMuted] = useState(false);</p>
-<p class="p2"><span class="Apple-converted-space">  </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>const intervalRef = useRef(null);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const audioContextRef = useRef(null);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>const initAudio = () =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>if (!audioContextRef.current) {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">  </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>// More aggressive "Buzzer" sound</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const playAlert = async (type = 'transition') =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>if (isMuted || !audioContextRef.current) return;</p>
-<p class="p2"><span class="Apple-converted-space">    </span></p>
-<p class="p1"><span class="Apple-converted-space">    </span>const playBuzzer = (freq1, freq2, duration, delay) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>setTimeout(() =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const osc1 = audioContextRef.current.createOscillator();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const osc2 = audioContextRef.current.createOscillator();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const gain = audioContextRef.current.createGain();</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Mixing a sawtooth and square wave at low, slightly detuned frequencies</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// creates a harsh, metallic "sports scoreboard" buzzer sound.</p>
-<p class="p1"><span class="Apple-converted-space">        </span>osc1.type = 'sawtooth';<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>osc2.type = 'square';<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>osc1.frequency.setValueAtTime(freq1, audioContextRef.current.currentTime);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>osc2.frequency.setValueAtTime(freq2, audioContextRef.current.currentTime);</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>gain.gain.setValueAtTime(0.3, audioContextRef.current.currentTime);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Linear ramp gives it a more mechanical, abrupt cut-off</p>
-<p class="p1"><span class="Apple-converted-space">        </span>gain.gain.linearRampToValueAtTime(0.01, audioContextRef.current.currentTime + duration);</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>osc1.connect(gain);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>osc2.connect(gain);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>gain.connect(audioContextRef.current.destination);</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>osc1.start();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>osc2.start();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>osc1.stop(audioContextRef.current.currentTime + duration);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>osc2.stop(audioContextRef.current.currentTime + duration);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}, delay);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>if (type === 'transition') {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>// Sharp, short double-buzz for transitions</p>
-<p class="p1"><span class="Apple-converted-space">      </span>playBuzzer(120, 125, 0.2, 0);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>playBuzzer(120, 125, 0.3, 300);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>// Long, deep, sustained buzzer for the final finish</p>
-<p class="p1"><span class="Apple-converted-space">      </span>playBuzzer(100, 105, 1.5, 0);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">  </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>useEffect(() =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>if (isActive &amp;&amp; currentIndex !== null) {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>intervalRef.current = setInterval(() =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>setTimers(prev =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>const newTimers = [...prev];</p>
-<p class="p1"><span class="Apple-converted-space">          </span>const current = newTimers[currentIndex];</p>
-<p class="p2"><span class="Apple-converted-space">          </span></p>
-<p class="p1"><span class="Apple-converted-space">          </span>if (current.remaining &gt; 0) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>newTimers[currentIndex] = { ...current, remaining: current.remaining - 1 };</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return newTimers;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>clearInterval(intervalRef.current);</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (currentIndex &lt; timers.length - 1) {</p>
-<p class="p1"><span class="Apple-converted-space">              </span>playAlert('transition');</p>
-<p class="p1"><span class="Apple-converted-space">              </span>setCurrentIndex(currentIndex + 1);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">              </span>playAlert('finish');</p>
-<p class="p1"><span class="Apple-converted-space">              </span>setIsActive(false);</p>
-<p class="p1"><span class="Apple-converted-space">              </span>setCurrentIndex(null);</p>
-<p class="p1"><span class="Apple-converted-space">              </span>return prev.map(t =&gt; ({ ...t, remaining: t.duration }));</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return newTimers;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>});</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}, 1000);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>clearInterval(intervalRef.current);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>return () =&gt; clearInterval(intervalRef.current);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>}, [isActive, currentIndex, timers.length, isMuted]);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>const handleStart = () =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>initAudio();</p>
-<p class="p1"><span class="Apple-converted-space">    </span>if (currentIndex === null) setCurrentIndex(0);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>setIsActive(true);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>const handlePause = () =&gt; setIsActive(false);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>const handleReset = () =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>setIsActive(false);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>setCurrentIndex(null);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>setTimers(timers.map(t =&gt; ({ ...t, remaining: t.duration })));</p>
-<p class="p1"><span class="Apple-converted-space">  </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>const saveSequence = () =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>if (!saveName.trim() || timers.length === 0) return;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const newSaved = {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>id: Date.now().toString(),</p>
-<p class="p1"><span class="Apple-converted-space">      </span>name: saveName.toUpperCase(),</p>
-<p class="p1"><span class="Apple-converted-space">      </span>timers: timers.map(t =&gt; ({...t, remaining: t.duration}))</p>
-<p class="p1"><span class="Apple-converted-space">    </span>};</p>
-<p class="p1"><span class="Apple-converted-space">    </span>setSavedSequences([...savedSequences, newSaved]);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>setSaveName('');</p>
-<p class="p1"><span class="Apple-converted-space">  </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>const loadSequence = (sequenceToLoad) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>if (isActive) return;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const newTimers = sequenceToLoad.map(t =&gt; ({</p>
-<p class="p1"><span class="Apple-converted-space">       </span>...t,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">       </span>id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,</p>
-<p class="p1"><span class="Apple-converted-space">       </span>remaining: t.duration<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">    </span>}));</p>
-<p class="p1"><span class="Apple-converted-space">    </span>setTimers(newTimers);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>setCurrentIndex(null);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>setIsActive(false);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>const addTimer = () =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const newTimer = {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>id: Date.now().toString(),</p>
-<p class="p1"><span class="Apple-converted-space">      </span>label: 'NEW DRILL',</p>
-<p class="p1"><span class="Apple-converted-space">      </span>duration: 60,</p>
-<p class="p1"><span class="Apple-converted-space">      </span>remaining: 60</p>
-<p class="p1"><span class="Apple-converted-space">    </span>};</p>
-<p class="p1"><span class="Apple-converted-space">    </span>setTimers([...timers, newTimer]);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>const duplicateTimer = (id) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>if (isActive) return;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const index = timers.findIndex(t =&gt; t.id === id);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>if (index === -1) return;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const timerToCopy = timers[index];</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const newTimer = {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>...timerToCopy,</p>
-<p class="p1"><span class="Apple-converted-space">      </span>id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,</p>
-<p class="p1"><span class="Apple-converted-space">      </span>remaining: timerToCopy.duration</p>
-<p class="p1"><span class="Apple-converted-space">    </span>};</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const newTimers = [...timers];</p>
-<p class="p1"><span class="Apple-converted-space">    </span>newTimers.splice(index + 1, 0, newTimer);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>setTimers(newTimers);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>const removeTimer = (id) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>if (isActive) return;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>setTimers(timers.filter(t =&gt; t.id !== id));</p>
-<p class="p1"><span class="Apple-converted-space">  </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>const updateTimer = (id, field, value) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>setTimers(timers.map(t =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>if (t.id === id) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const val = field === 'duration' ? Math.max(1, parseInt(value) || 0) : value;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>return { ...t, [field]: val, remaining: field === 'duration' ? val : t.remaining };</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p1"><span class="Apple-converted-space">      </span>return t;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}));</p>
-<p class="p1"><span class="Apple-converted-space">  </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>const moveTimer = (index, direction) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>if (isActive) return;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const newTimers = [...timers];</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const targetIndex = index + direction;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>if (targetIndex &lt; 0 || targetIndex &gt;= timers.length) return;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>[newTimers[index], newTimers[targetIndex]] = [newTimers[targetIndex], newTimers[index]];</p>
-<p class="p1"><span class="Apple-converted-space">    </span>setTimers(newTimers);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>const formatTime = (seconds) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const mins = Math.floor(seconds / 60);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const secs = seconds % 60;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>return `${mins}:${secs.toString().padStart(2, '0')}`;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>const totalTimeRemaining = timers.reduce((acc, curr, idx) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>if (currentIndex !== null &amp;&amp; idx &lt; currentIndex) return acc;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>return acc + curr.remaining;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>}, 0);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>return (</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div className="min-h-screen bg-black p-4 md:p-8 font-sans text-white uppercase tracking-tighter"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div className="max-w-2xl mx-auto"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>{/* Header */}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;header className="flex justify-between items-center mb-10 border-b-4 border-amber-500 pb-4"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;h1 className="text-4xl font-black italic flex items-center gap-2 text-amber-500"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;Zap fill="currentColor" className="text-amber-500" /&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>IRON SEQUENCE</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/h1&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;p className="text-neutral-500 text-xs font-bold tracking-[0.2em]"&gt;High Performance Training&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;button<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>onClick={() =&gt; setIsMuted(!isMuted)}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>className="p-2 rounded-full hover:bg-neutral-800 transition-colors text-amber-500"</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>{isMuted ? &lt;VolumeX size={28} /&gt; : &lt;Volume2 size={28} /&gt;}</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/header&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>{/* Main Display */}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div className="bg-neutral-900 rounded-lg shadow-[0_0_50px_rgba(245,158,11,0.15)] p-10 mb-10 text-center border-2 border-neutral-800 relative overflow-hidden"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="absolute top-0 left-0 w-full h-1 bg-neutral-800"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>{currentIndex !== null &amp;&amp; (</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;div<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>className="h-full bg-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.8)] transition-all duration-1000"</p>
-<p class="p1"><span class="Apple-converted-space">                </span>style={{ width: `${((timers[currentIndex].duration - timers[currentIndex].remaining) / timers[currentIndex].duration) * 100}%` }}</p>
-<p class="p1"><span class="Apple-converted-space">              </span>/&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>)}</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="text-amber-500 font-black text-xl mb-4 tracking-widest"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>{currentIndex !== null ? timers[currentIndex].label : "READY TO WORK"}</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="text-8xl md:text-9xl font-black tabular-nums mb-8 leading-none"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>{currentIndex !== null ? formatTime(timers[currentIndex].remaining) : formatTime(timers[0]?.duration || 0)}</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">          </span></p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="flex justify-center gap-6"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>{!isActive ? (</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;button<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>onClick={handleStart}</p>
-<p class="p1"><span class="Apple-converted-space">                </span>className="flex items-center gap-3 bg-amber-500 hover:bg-amber-400 text-black px-12 py-5 rounded-md font-black text-2xl transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-amber-900/20"</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;Play fill="currentColor" size={28} /&gt; GO</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>) : (</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;button<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>onClick={handlePause}</p>
-<p class="p1"><span class="Apple-converted-space">                </span>className="flex items-center gap-3 bg-white hover:bg-neutral-200 text-black px-12 py-5 rounded-md font-black text-2xl transition-all transform hover:scale-105 active:scale-95 shadow-lg"</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;Pause fill="currentColor" size={28} /&gt; STOP</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>)}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;button<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">              </span>onClick={handleReset}</p>
-<p class="p1"><span class="Apple-converted-space">              </span>className="px-6 rounded-md border-2 border-neutral-700 text-neutral-500 hover:text-white hover:border-white transition-all active:scale-90"</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;RotateCcw size={28} /&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">          </span></p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="mt-8 text-neutral-500 font-bold tracking-widest text-xs"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>TOTAL TIME LEFT: {formatTime(totalTimeRemaining)}</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>{/* List of Timers */}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div className="space-y-4"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="flex justify-between items-end border-b border-neutral-800 pb-2"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;h2 className="font-black text-neutral-400 text-lg tracking-widest"&gt;DRILL LIST&lt;/h2&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;button<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">              </span>onClick={addTimer}</p>
-<p class="p1"><span class="Apple-converted-space">              </span>disabled={isActive}</p>
-<p class="p1"><span class="Apple-converted-space">              </span>className="flex items-center gap-1 text-sm font-black text-amber-500 hover:text-amber-300 disabled:opacity-50"</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;Plus size={20} strokeWidth={3} /&gt; ADD DRILL</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="space-y-3"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>{timers.map((timer, index) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">              </span>const isCurrent = currentIndex === index;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">              </span>return (</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                  </span>key={timer.id}</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>className={`group relative bg-neutral-900 border-l-8 rounded-r-lg p-5 transition-all ${</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>isCurrent ? 'border-amber-500 bg-neutral-800 shadow-lg' : 'border-neutral-700'</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>}`}</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;div className="relative flex items-center gap-4"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div className={`w-10 h-10 flex items-center justify-center font-black italic text-xl ${</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>isCurrent ? 'text-amber-500' : 'text-neutral-600'</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>}`}&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>#{index + 1}</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&lt;input<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                        </span>type="text"<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                        </span>value={timer.label}</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>onChange={(e) =&gt; updateTimer(timer.id, 'label', e.target.value)}</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>disabled={isActive}</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>className="bg-transparent font-black text-lg focus:outline-none focus:text-amber-400 uppercase tracking-wider"</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>placeholder="DRILL NAME"</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>/&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&lt;div className="flex items-center gap-2"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                         </span>&lt;input<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                          </span>type="number"<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                          </span>value={timer.duration}</p>
-<p class="p1"><span class="Apple-converted-space">                          </span>onChange={(e) =&gt; updateTimer(timer.id, 'duration', e.target.value)}</p>
-<p class="p1"><span class="Apple-converted-space">                          </span>disabled={isActive}</p>
-<p class="p1"><span class="Apple-converted-space">                          </span>className="w-20 bg-black text-amber-500 text-right font-black rounded border border-neutral-800 px-2 py-1 focus:outline-none focus:border-amber-500"</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>/&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span className="text-[10px] text-neutral-600 font-black"&gt;SECONDS&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div className="flex items-center gap-2 md:opacity-0 group-hover:opacity-100 transition-opacity"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&lt;div className="flex flex-col gap-1"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;button<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                          </span>onClick={() =&gt; moveTimer(index, -1)}</p>
-<p class="p1"><span class="Apple-converted-space">                          </span>disabled={isActive || index === 0}</p>
-<p class="p1"><span class="Apple-converted-space">                          </span>className="p-1 text-neutral-600 hover:text-white disabled:opacity-0"</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                          </span>&lt;ChevronUp size={20} /&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;button<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                          </span>onClick={() =&gt; moveTimer(index, 1)}</p>
-<p class="p1"><span class="Apple-converted-space">                          </span>disabled={isActive || index === timers.length - 1}</p>
-<p class="p1"><span class="Apple-converted-space">                          </span>className="p-1 text-neutral-600 hover:text-white disabled:opacity-0"</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                          </span>&lt;ChevronDown size={20} /&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&lt;button<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                        </span>onClick={() =&gt; duplicateTimer(timer.id)}</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>disabled={isActive}</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>title="Duplicate"</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>className="p-2 text-neutral-500 hover:text-amber-500 transition-colors"</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;Copy size={18} /&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&lt;button<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                        </span>onClick={() =&gt; removeTimer(timer.id)}</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>disabled={isActive || timers.length &lt;= 1}</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>className="p-2 text-neutral-500 hover:text-red-500 transition-colors"</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;Trash2 size={20} /&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>})}</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>{/* Preset Management */}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div className="mt-10 bg-neutral-900 border border-neutral-800 rounded-lg p-5"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;h2 className="font-black text-neutral-400 text-lg tracking-widest mb-4 border-b border-neutral-800 pb-2 flex items-center gap-2"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;Save size={20} /&gt; SAVED WORKOUTS</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/h2&gt;</p>
-<p class="p2"><span class="Apple-converted-space">          </span></p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="flex flex-col md:flex-row gap-4"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="flex-1 flex gap-2"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;input<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>type="text"</p>
-<p class="p1"><span class="Apple-converted-space">                </span>value={saveName}</p>
-<p class="p1"><span class="Apple-converted-space">                </span>onChange={(e) =&gt; setSaveName(e.target.value)}</p>
-<p class="p1"><span class="Apple-converted-space">                </span>placeholder="NAME THIS ROUTINE..."</p>
-<p class="p1"><span class="Apple-converted-space">                </span>className="flex-1 bg-black border border-neutral-700 rounded px-4 py-3 text-sm font-bold focus:border-amber-500 outline-none text-white uppercase"</p>
-<p class="p1"><span class="Apple-converted-space">              </span>/&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;button<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>onClick={saveSequence}</p>
-<p class="p1"><span class="Apple-converted-space">                </span>disabled={!saveName.trim() || timers.length === 0}</p>
-<p class="p1"><span class="Apple-converted-space">                </span>className="bg-neutral-800 hover:bg-neutral-700 text-amber-500 px-6 py-3 rounded font-black disabled:opacity-50 transition-colors flex items-center gap-2"</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>SAVE</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="flex-1 relative"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;select<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>onChange={(e) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>if (e.target.value === 'default') {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>loadSequence(DEFAULT_SEQUENCE);</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>} else if (e.target.value !== '') {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>const seq = savedSequences.find(s =&gt; s.id === e.target.value);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>if (seq) loadSequence(seq.timers);</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>}</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>e.target.value = ''; // Reset select after picking</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}}</p>
-<p class="p1"><span class="Apple-converted-space">                </span>disabled={isActive}</p>
-<p class="p1"><span class="Apple-converted-space">                </span>className="w-full bg-black border border-neutral-700 rounded px-4 py-3 text-sm font-bold text-amber-500 outline-none appearance-none cursor-pointer disabled:opacity-50 uppercase"</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;option value=""&gt;LOAD A ROUTINE...&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;option value="default"&gt;DEFAULT: 3 SETS&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>{savedSequences.map(seq =&gt; (</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;option key={seq.id} value={seq.id}&gt;{seq.name}&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>))}</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;/select&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-amber-500"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;Download size={18} /&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>);</p>
-<p class="p1">};</p>
-<p class="p2"><br></p>
-<p class="p1">export default App;</p>
+<body class="bg-black text-white">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // --- INLINE ICONS (Replacing Lucide dependencies for pure standalone capability) ---
+    const Icon = ({ paths, size = 24, fill = "none", stroke = "currentColor", strokeWidth = 2, className = "" }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke={stroke} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
+        {paths}
+      </svg>
+    );
+
+    const Play = ({ size, fill, className }) => <Icon size={size} fill={fill || "none"} className={className} paths={<polygon points="5 3 19 12 5 21 5 3" />} />;
+    const Pause = ({ size, fill, className }) => <Icon size={size} fill={fill || "none"} className={className} paths={<><rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" /></>} />;
+    const RotateCcw = ({ size, className }) => <Icon size={size} className={className} paths={<><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></>} />;
+    const Plus = ({ size, strokeWidth, className }) => <Icon size={size} strokeWidth={strokeWidth || 2} className={className} paths={<><path d="M5 12h14" /><path d="M12 5v14" /></>} />;
+    const Trash2 = ({ size, className }) => <Icon size={size} className={className} paths={<><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></>} />;
+    const ChevronUp = ({ size, className }) => <Icon size={size} className={className} paths={<path d="m18 15-6-6-6 6" />} />;
+    const ChevronDown = ({ size, className }) => <Icon size={size} className={className} paths={<path d="m6 9 6 6 6-6" />} />;
+    const Volume2 = ({ size, className }) => <Icon size={size} className={className} paths={<><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M15.54 8.46a5 5 0 0 1 0 7.07" /><path d="M19.07 4.93a10 10 0 0 1 0 14.14" /></>} />;
+    const VolumeX = ({ size, className }) => <Icon size={size} className={className} paths={<><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><line x1="23" y1="1" x2="1" y2="23" /></>} />;
+    const Zap = ({ size, fill, className }) => <Icon size={size} fill={fill || "none"} className={className} paths={<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />} />;
+    const Copy = ({ size, className }) => <Icon size={size} className={className} paths={<><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></>} />;
+    const Save = ({ size, className }) => <Icon size={size} className={className} paths={<><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></>} />;
+    const Download = ({ size, className }) => <Icon size={size} className={className} paths={<><path d="M21 15v4a2 2 0 0 1-2-2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></>} />;
+
+
+    // --- MAIN APP LOGIC ---
+
+    const DEFAULT_SEQUENCE = [
+      { id: '1', label: 'GET READY', duration: 15, remaining: 15 },
+      { id: '2', label: 'SET 1', duration: 60, remaining: 60 },
+      { id: '3', label: 'REST', duration: 30, remaining: 30 },
+      { id: '4', label: 'SET 2', duration: 60, remaining: 60 },
+      { id: '5', label: 'REST', duration: 30, remaining: 30 },
+      { id: '6', label: 'SET 3', duration: 60, remaining: 60 },
+      { id: '7', label: 'REST', duration: 30, remaining: 30 },
+    ];
+
+    const App = () => {
+      const [timers, setTimers] = useState(DEFAULT_SEQUENCE);
+      const [savedSequences, setSavedSequences] = useState([]);
+      const [saveName, setSaveName] = useState('');
+      
+      const [currentIndex, setCurrentIndex] = useState(null);
+      const [isActive, setIsActive] = useState(false);
+      const [isMuted, setIsMuted] = useState(false);
+      
+      const intervalRef = useRef(null);
+      const audioContextRef = useRef(null);
+
+      const initAudio = () => {
+        if (!audioContextRef.current) {
+          audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+        }
+      };
+
+      // Aggressive "Buzzer" sound
+      const playAlert = async (type = 'transition') => {
+        if (isMuted || !audioContextRef.current) return;
+        
+        const playBuzzer = (freq1, freq2, duration, delay) => {
+          setTimeout(() => {
+            const osc1 = audioContextRef.current.createOscillator();
+            const osc2 = audioContextRef.current.createOscillator();
+            const gain = audioContextRef.current.createGain();
+            
+            // Mixing a sawtooth and square wave at low, slightly detuned frequencies
+            // creates a harsh, metallic "sports scoreboard" buzzer sound.
+            osc1.type = 'sawtooth'; 
+            osc2.type = 'square'; 
+            osc1.frequency.setValueAtTime(freq1, audioContextRef.current.currentTime);
+            osc2.frequency.setValueAtTime(freq2, audioContextRef.current.currentTime);
+            
+            gain.gain.setValueAtTime(0.3, audioContextRef.current.currentTime);
+            // Linear ramp gives it a more mechanical, abrupt cut-off
+            gain.gain.linearRampToValueAtTime(0.01, audioContextRef.current.currentTime + duration);
+            
+            osc1.connect(gain);
+            osc2.connect(gain);
+            gain.connect(audioContextRef.current.destination);
+            
+            osc1.start();
+            osc2.start();
+            osc1.stop(audioContextRef.current.currentTime + duration);
+            osc2.stop(audioContextRef.current.currentTime + duration);
+          }, delay);
+        };
+
+        if (type === 'transition') {
+          // Sharp, short double-buzz for transitions
+          playBuzzer(120, 125, 0.2, 0);
+          playBuzzer(120, 125, 0.3, 300);
+        } else {
+          // Long, deep, sustained buzzer for the final finish
+          playBuzzer(100, 105, 1.5, 0);
+        }
+      };
+
+      useEffect(() => {
+        if (isActive && currentIndex !== null) {
+          intervalRef.current = setInterval(() => {
+            setTimers(prev => {
+              const newTimers = [...prev];
+              const current = newTimers[currentIndex];
+              
+              if (current.remaining > 0) {
+                newTimers[currentIndex] = { ...current, remaining: current.remaining - 1 };
+                return newTimers;
+              } else {
+                clearInterval(intervalRef.current);
+                
+                if (currentIndex < timers.length - 1) {
+                  playAlert('transition');
+                  setCurrentIndex(currentIndex + 1);
+                } else {
+                  playAlert('finish');
+                  setIsActive(false);
+                  setCurrentIndex(null);
+                  return prev.map(t => ({ ...t, remaining: t.duration }));
+                }
+                return newTimers;
+              }
+            });
+          }, 1000);
+        } else {
+          clearInterval(intervalRef.current);
+        }
+        return () => clearInterval(intervalRef.current);
+      }, [isActive, currentIndex, timers.length, isMuted]);
+
+      const handleStart = () => {
+        initAudio();
+        if (currentIndex === null) setCurrentIndex(0);
+        setIsActive(true);
+      };
+
+      const handlePause = () => setIsActive(false);
+
+      const handleReset = () => {
+        setIsActive(false);
+        setCurrentIndex(null);
+        setTimers(timers.map(t => ({ ...t, remaining: t.duration })));
+      };
+
+      const saveSequence = () => {
+        if (!saveName.trim() || timers.length === 0) return;
+        const newSaved = {
+          id: Date.now().toString(),
+          name: saveName.toUpperCase(),
+          timers: timers.map(t => ({...t, remaining: t.duration}))
+        };
+        setSavedSequences([...savedSequences, newSaved]);
+        setSaveName('');
+      };
+
+      const loadSequence = (sequenceToLoad) => {
+        if (isActive) return;
+        const newTimers = sequenceToLoad.map(t => ({
+           ...t, 
+           id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+           remaining: t.duration 
+        }));
+        setTimers(newTimers);
+        setCurrentIndex(null);
+        setIsActive(false);
+      };
+
+      const addTimer = () => {
+        const newTimer = {
+          id: Date.now().toString(),
+          label: 'NEW DRILL',
+          duration: 60,
+          remaining: 60
+        };
+        setTimers([...timers, newTimer]);
+      };
+
+      const duplicateTimer = (id) => {
+        if (isActive) return;
+        const index = timers.findIndex(t => t.id === id);
+        if (index === -1) return;
+        const timerToCopy = timers[index];
+        const newTimer = {
+          ...timerToCopy,
+          id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          remaining: timerToCopy.duration
+        };
+        const newTimers = [...timers];
+        newTimers.splice(index + 1, 0, newTimer);
+        setTimers(newTimers);
+      };
+
+      const removeTimer = (id) => {
+        if (isActive) return;
+        setTimers(timers.filter(t => t.id !== id));
+      };
+
+      const updateTimer = (id, field, value) => {
+        setTimers(timers.map(t => {
+          if (t.id === id) {
+            const val = field === 'duration' ? Math.max(1, parseInt(value) || 0) : value;
+            return { ...t, [field]: val, remaining: field === 'duration' ? val : t.remaining };
+          }
+          return t;
+        }));
+      };
+
+      const moveTimer = (index, direction) => {
+        if (isActive) return;
+        const newTimers = [...timers];
+        const targetIndex = index + direction;
+        if (targetIndex < 0 || targetIndex >= timers.length) return;
+        [newTimers[index], newTimers[targetIndex]] = [newTimers[targetIndex], newTimers[index]];
+        setTimers(newTimers);
+      };
+
+      const formatTime = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+      };
+
+      const totalTimeRemaining = timers.reduce((acc, curr, idx) => {
+        if (currentIndex !== null && idx < currentIndex) return acc;
+        return acc + curr.remaining;
+      }, 0);
+
+      return (
+        <div className="min-h-screen bg-black p-4 md:p-8 font-sans text-white uppercase tracking-tighter">
+          <div className="max-w-2xl mx-auto">
+            {/* Header */}
+            <header className="flex justify-between items-center mb-10 border-b-4 border-amber-500 pb-4">
+              <div>
+                <h1 className="text-4xl font-black italic flex items-center gap-2 text-amber-500">
+                  <Zap fill="currentColor" className="text-amber-500" />
+                  IRON SEQUENCE
+                </h1>
+                <p className="text-neutral-500 text-xs font-bold tracking-[0.2em]">High Performance Training</p>
+              </div>
+              <button 
+                onClick={() => setIsMuted(!isMuted)}
+                className="p-2 rounded-full hover:bg-neutral-800 transition-colors text-amber-500"
+              >
+                {isMuted ? <VolumeX size={28} /> : <Volume2 size={28} />}
+              </button>
+            </header>
+
+            {/* Main Display */}
+            <div className="bg-neutral-900 rounded-lg shadow-[0_0_50px_rgba(245,158,11,0.15)] p-10 mb-10 text-center border-2 border-neutral-800 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-neutral-800">
+                {currentIndex !== null && (
+                  <div 
+                    className="h-full bg-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.8)] transition-all duration-1000"
+                    style={{ width: `${((timers[currentIndex].duration - timers[currentIndex].remaining) / timers[currentIndex].duration) * 100}%` }}
+                  />
+                )}
+              </div>
+
+              <div className="text-amber-500 font-black text-xl mb-4 tracking-widest">
+                {currentIndex !== null ? timers[currentIndex].label : "READY TO WORK"}
+              </div>
+              <div className="text-8xl md:text-9xl font-black tabular-nums mb-8 leading-none">
+                {currentIndex !== null ? formatTime(timers[currentIndex].remaining) : formatTime(timers[0]?.duration || 0)}
+              </div>
+              
+              <div className="flex justify-center gap-6">
+                {!isActive ? (
+                  <button 
+                    onClick={handleStart}
+                    className="flex items-center gap-3 bg-amber-500 hover:bg-amber-400 text-black px-12 py-5 rounded-md font-black text-2xl transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-amber-900/20"
+                  >
+                    <Play fill="currentColor" size={28} /> GO
+                  </button>
+                ) : (
+                  <button 
+                    onClick={handlePause}
+                    className="flex items-center gap-3 bg-white hover:bg-neutral-200 text-black px-12 py-5 rounded-md font-black text-2xl transition-all transform hover:scale-105 active:scale-95 shadow-lg"
+                  >
+                    <Pause fill="currentColor" size={28} /> STOP
+                  </button>
+                )}
+                <button 
+                  onClick={handleReset}
+                  className="px-6 rounded-md border-2 border-neutral-700 text-neutral-500 hover:text-white hover:border-white transition-all active:scale-90"
+                >
+                  <RotateCcw size={28} />
+                </button>
+              </div>
+              
+              <div className="mt-8 text-neutral-500 font-bold tracking-widest text-xs">
+                TOTAL TIME LEFT: {formatTime(totalTimeRemaining)}
+              </div>
+            </div>
+
+            {/* List of Timers */}
+            <div className="space-y-4">
+              <div className="flex justify-between items-end border-b border-neutral-800 pb-2">
+                <h2 className="font-black text-neutral-400 text-lg tracking-widest">DRILL LIST</h2>
+                <button 
+                  onClick={addTimer}
+                  disabled={isActive}
+                  className="flex items-center gap-1 text-sm font-black text-amber-500 hover:text-amber-300 disabled:opacity-50"
+                >
+                  <Plus size={20} strokeWidth={3} /> ADD DRILL
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {timers.map((timer, index) => {
+                  const isCurrent = currentIndex === index;
+
+                  return (
+                    <div 
+                      key={timer.id}
+                      className={`group relative bg-neutral-900 border-l-8 rounded-r-lg p-5 transition-all ${
+                        isCurrent ? 'border-amber-500 bg-neutral-800 shadow-lg' : 'border-neutral-700'
+                      }`}
+                    >
+                      <div className="relative flex items-center gap-4">
+                        <div className={`w-10 h-10 flex items-center justify-center font-black italic text-xl ${
+                          isCurrent ? 'text-amber-500' : 'text-neutral-600'
+                        }`}>
+                          #{index + 1}
+                        </div>
+
+                        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2">
+                          <input 
+                            type="text" 
+                            value={timer.label}
+                            onChange={(e) => updateTimer(timer.id, 'label', e.target.value)}
+                            disabled={isActive}
+                            className="bg-transparent font-black text-lg focus:outline-none focus:text-amber-400 uppercase tracking-wider w-full"
+                            placeholder="DRILL NAME"
+                          />
+                          <div className="flex items-center gap-2">
+                             <input 
+                              type="number" 
+                              value={timer.duration}
+                              onChange={(e) => updateTimer(timer.id, 'duration', e.target.value)}
+                              disabled={isActive}
+                              className="w-20 bg-black text-amber-500 text-right font-black rounded border border-neutral-800 px-2 py-1 focus:outline-none focus:border-amber-500"
+                            />
+                            <span className="text-[10px] text-neutral-600 font-black">SECONDS</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex flex-col gap-1">
+                            <button 
+                              onClick={() => moveTimer(index, -1)}
+                              disabled={isActive || index === 0}
+                              className="p-1 text-neutral-600 hover:text-white disabled:opacity-0"
+                            >
+                              <ChevronUp size={20} />
+                            </button>
+                            <button 
+                              onClick={() => moveTimer(index, 1)}
+                              disabled={isActive || index === timers.length - 1}
+                              className="p-1 text-neutral-600 hover:text-white disabled:opacity-0"
+                            >
+                              <ChevronDown size={20} />
+                            </button>
+                          </div>
+                          <button 
+                            onClick={() => duplicateTimer(timer.id)}
+                            disabled={isActive}
+                            title="Duplicate"
+                            className="p-2 text-neutral-500 hover:text-amber-500 transition-colors"
+                          >
+                            <Copy size={18} />
+                          </button>
+                          <button 
+                            onClick={() => removeTimer(timer.id)}
+                            disabled={isActive || timers.length <= 1}
+                            className="p-2 text-neutral-500 hover:text-red-500 transition-colors"
+                          >
+                            <Trash2 size={20} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Preset Management */}
+            <div className="mt-10 bg-neutral-900 border border-neutral-800 rounded-lg p-5">
+              <h2 className="font-black text-neutral-400 text-lg tracking-widest mb-4 border-b border-neutral-800 pb-2 flex items-center gap-2">
+                <Save size={20} /> SAVED WORKOUTS
+              </h2>
+              
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1 flex gap-2">
+                  <input 
+                    type="text"
+                    value={saveName}
+                    onChange={(e) => setSaveName(e.target.value)}
+                    placeholder="NAME THIS ROUTINE..."
+                    className="flex-1 bg-black border border-neutral-700 rounded px-4 py-3 text-sm font-bold focus:border-amber-500 outline-none text-white uppercase"
+                  />
+                  <button 
+                    onClick={saveSequence}
+                    disabled={!saveName.trim() || timers.length === 0}
+                    className="bg-neutral-800 hover:bg-neutral-700 text-amber-500 px-6 py-3 rounded font-black disabled:opacity-50 transition-colors flex items-center gap-2"
+                  >
+                    SAVE
+                  </button>
+                </div>
+                
+                <div className="flex-1 relative">
+                  <select 
+                    onChange={(e) => {
+                      if (e.target.value === 'default') {
+                        loadSequence(DEFAULT_SEQUENCE);
+                      } else if (e.target.value !== '') {
+                        const seq = savedSequences.find(s => s.id === e.target.value);
+                        if (seq) loadSequence(seq.timers);
+                      }
+                      e.target.value = ''; // Reset select after picking
+                    }}
+                    disabled={isActive}
+                    className="w-full bg-black border border-neutral-700 rounded px-4 py-3 text-sm font-bold text-amber-500 outline-none appearance-none cursor-pointer disabled:opacity-50 uppercase"
+                  >
+                    <option value="">LOAD A ROUTINE...</option>
+                    <option value="default">DEFAULT: 3 SETS</option>
+                    {savedSequences.map(seq => (
+                      <option key={seq.id} value={seq.id}>{seq.name}</option>
+                    ))}
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-amber-500">
+                    <Download size={18} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
 </body>
 </html>
